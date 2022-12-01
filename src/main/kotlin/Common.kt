@@ -16,7 +16,7 @@ class InputData {
     }
 }
 
-fun solve(part: String, correctSolution: Int?, function: () -> Int) {
+fun <T> solve(part: String, correctSolution: T?, function: () -> T) {
     val solution = function()
     if (correctSolution != null && solution != correctSolution) {
         throw IllegalStateException("Wrong solution!")
