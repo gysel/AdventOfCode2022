@@ -1,7 +1,3 @@
 = Advent of Code 2022
 
-.Day 01
-[source,kotlin]
-----
-include::src/main/kotlin/Day01.kt[]
-----
+See https://adventofcode.com/2022
