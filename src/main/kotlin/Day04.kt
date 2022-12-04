@@ -8,9 +8,9 @@ fun main() {
             first fullyContains second || second fullyContains first
         }
     }
-    solve("Part 2", null) {
+    solve("Part 2", 919) {
         data.count { (first, second) ->
-            first overlap second
+            first overlapsWith second
         }
     }
 }
@@ -24,7 +24,6 @@ infix fun IntRange.fullyContains(other: IntRange): Boolean {
     return other.first >= this.first && other.last <= this.last
 }
 
-infix fun IntRange.overlap(other: IntRange): Boolean {
-    // this can certainly be implemented way faster - but the result is correct so ...
-    return (this.toSet() intersect other.toSet()).isNotEmpty()
+infix fun IntRange.overlapsWith(other: IntRange): Boolean {
+    return this.first <= other.last && this.last >= other.first
 }
