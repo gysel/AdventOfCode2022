@@ -8,14 +8,13 @@ fun main() {
     input.forEach { line ->
         when {
             line.startsWith("$ cd ") -> {
-                val target = line.drop("$ cd ".length)
-                when (target) {
+                when (line.drop("$ cd ".length)) {
                     "/" -> pwd.clear()
                     ".." -> pwd.pop()
                     else -> {
                         val newFolder = Folder()
                         folders[pwd.assemble()]!!.add(newFolder)
-                        pwd.add(target)
+                        pwd.add(line.drop("$ cd ".length))
                         folders[pwd.assemble()] = newFolder
                     }
                 }
@@ -32,28 +31,24 @@ fun main() {
             }
 
             else -> { // assume file
-                val (size, filename) = line.split(" ")
+                val (size, _) = line.split(" ")
                 folders[pwd.assemble()]!!.add(size.toLong())
             }
         }
     }
-
+    val folderSizes = folders
+        .map { (_, folder) ->
+            folder.calculateDeepSize()
+        }
     solve("Part 1", 1642503) {
-        folders
-            .map { (_, folder) ->
-                folder.calculateDeepSize()
-            }
-            .filter { it <= 100000 }.sum()
+        folderSizes.filter { it <= 100000 }.sum()
     }
     solve("Part 2", 6999588) {
         val diskSize = 70000000
         val diskSpaceUsed = folders["/"]!!.calculateDeepSize()
-        val diskspaceNeeded = 30000000 - (diskSize - diskSpaceUsed)
-        folders
-            .map { (_, folder) ->
-                folder.calculateDeepSize()
-            }
-            .filter { it >= diskspaceNeeded }
+        val diskSpaceNeeded = 30000000 - (diskSize - diskSpaceUsed)
+        folderSizes
+            .filter { it >= diskSpaceNeeded }
             .min()
     }
 }
