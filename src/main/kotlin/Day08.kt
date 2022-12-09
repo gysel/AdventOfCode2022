@@ -1,5 +1,3 @@
-data class Coordinates(val x: Int, val y: Int)
-
 fun main() {
     val input = InputData.readLines("day08.txt")
     val gridSize = 99

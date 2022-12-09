@@ -24,3 +24,5 @@ fun <T> solve(part: String, correctSolution: T?, function: () -> T) {
     }
     println("Solution of $part is $solution, calculation took ${System.currentTimeMillis() - start}ms")
 }
+
+data class Coordinates(val x: Int, val y: Int)
