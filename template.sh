@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 DAY=$1
 
 cat << EOF > src/main/kotlin/Day$1.kt
@@ -12,5 +14,7 @@ fun main() {
 }
 EOF
 
-touch "src/main/resources/day${DAY}.txt"
+curl -s -H "cookie: session=${AOC_SESSION}" "https://adventofcode.com/2022/day/${DAY}/input" \
+  > "src/main/resources/day${DAY}.txt"
+
 git add "src/main"
