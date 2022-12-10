@@ -1,49 +1,39 @@
 fun main() {
-
-//    solve("Small Example", 1 + 3 * 4 + 5 * -1) {
-//        val input = """
-//            noop
-//            addx 3
-//            addx -5
-//        """.trimIndent().lines()
-//        calculateSignalStrengths(input, listOf(1, 3, 5))
-//    }
+    val indexes = (20..220 step 40)
 
     solve("Example 1", 13140) {
-        val indexes = listOf(20, 60, 100, 140, 180, 220)
         calculateSignalStrengths(InputData.readLines("day10-example.txt"), indexes)
     }
 
-
     val input = InputData.readLines("day10.txt")
     solve("Part 1", 17840) {
-        val indexes = listOf(20, 60, 100, 140, 180, 220)
         calculateSignalStrengths(input, indexes)
     }
 
     solve("Part 2", null) {
+        val width = 40
         val registers = calculateRegisters(input)
-        (1..240).zip(registers).chunked(40).map { line ->
-            val rendered = line.map { (cycle, register) ->
-                val x = cycle % 40
-                if (x == register || x == register - 1 || x == register + 1) '#' else ' '
+        val result = (1..240).zip(registers).chunked(width).map { line ->
+            line.map { (cycle, register) ->
+                val pixel = ((cycle - 1) % width)
+                if (pixel == register || pixel == register - 1 || pixel == register + 1) '#' else ' '
             }
-            println(rendered.joinToString(""))
         }
+        result.map { it.joinToString("") }.forEach(::println)
         "see ASCII art in stdout"
     } // correct: EALGULPG
 }
 
-private fun calculateSignalStrengths(input: List<String>, indexes: List<Int>): Int {
+private fun calculateSignalStrengths(input: List<String>, indexes: Iterable<Int>): Int {
     val cycles: List<Int> = calculateRegisters(input)
     return indexes.sumOf { i ->
-        cycles[i - 2] * i
+        cycles[i - 1] * i
     }
 }
 
 private fun calculateRegisters(input: List<String>): List<Int> {
     var register = 1
-    val cycles: List<Int> = input.flatMap { line ->
+    return listOf(register) + input.flatMap { line ->
         when (line.take(4)) {
             "addx" -> {
                 val n = line.drop(5).toInt()
@@ -56,5 +46,4 @@ private fun calculateRegisters(input: List<String>): List<Int> {
             else -> throw IllegalStateException()
         }
     }
-    return cycles
 }
