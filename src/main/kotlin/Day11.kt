@@ -1,88 +1,162 @@
 fun main() {
-//    val input = InputData.read("day11.txt")
-//        .split("\n\n")
-//        .map { it.lines() }
-//        .map { monkeyData ->
-//            val startingItems = monkeyData[1].drop(18).split(", ").map{ it.toInt()}
-//
-//        }
-
-    // What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans?
-    //solve("Part 1", 100345) {
-
-//        repeat(20) {
-//            monkeys.forEach { monkey ->
-//                monkey.round()
-//            }
-//        }
-
-    //monkeys.map { it.inspectionCounter }.sortedDescending().take(2).reduce { a, b -> a * b }
-    //}
-    solve("Example for part 2", 5204L * 5192) {
+    solve(
+        "Example for part 1 after 1 round", listOf(
+            listOf(20, 23, 27, 26).map(Int::toLong),
+            listOf(2080, 25, 167, 207, 401, 1046).map(Int::toLong),
+            listOf(),
+            listOf()
+        )
+    ) {
         val monkeys = createExampleState()
-
-        repeat(1000) {
-            monkeys.forEach(Monkey::round)
+        repeat(1) {
+            monkeys.forEach(Monkey::playRound)
         }
-        calculateMonkeyBusiness(monkeys)
+        monkeys.map { it.items.toList() }
+    }
+    /**
+     * == After round 1 ==
+     * Monkey 0 inspected items 2 times.
+     * Monkey 1 inspected items 4 times.
+     * Monkey 2 inspected items 3 times.
+     * Monkey 3 inspected items 6 times.
+     */
+    solve("Example for part 2 after 1 round", listOf(2, 4, 3, 6)) {
+        val monkeys = createExampleState(1)
+
+        repeat(1) {
+            monkeys.forEach(Monkey::playRound)
+        }
+        monkeys.map { it.inspectionCounter }
+    }
+    /**
+     * == After round 20 ==
+     * Monkey 0 inspected items 99 times.
+     * Monkey 1 inspected items 97 times.
+     * Monkey 2 inspected items 8 times.
+     * Monkey 3 inspected items 103 times.
+     */
+    solve("Example for part 2 after 20 rounds", listOf(99, 97, 8, 103)) {
+        val monkeys = createExampleState(1)
+
+        repeat(20) {
+            monkeys.forEach(Monkey::playRound)
+        }
+        monkeys.map { it.inspectionCounter }
+    }
+    /**
+     * == After round 1000 ==
+     * Monkey 0 inspected items 5204 times.
+     * Monkey 1 inspected items 4792 times.
+     * Monkey 2 inspected items 199 times.
+     * Monkey 3 inspected items 5192 times.
+     */
+    solve("Example for part 2 after 1000 rounds", listOf(5204, 4792, 199, 5192)) {
+        val monkeys = createExampleState(1)
+
+        repeat(1_000) {
+            monkeys.forEach(Monkey::playRound)
+            //println("Calculated round $it")
+        }
+        monkeys.map { it.inspectionCounter }
+        //calculateMonkeyBusiness(monkeys)
 
     }
-    solve("Part 2", null) {
+    solve("Part 1", 100345) {
         val monkeys = createInitialState()
 
-        repeat(10_000) {
-            monkeys.forEach(Monkey::round)
+        repeat(20) {
+            monkeys.forEach(Monkey::playRound)
         }
         calculateMonkeyBusiness(monkeys)
     }
-    // 1199379048 is too low
-    // 26969182824 is too low
-    // 26748929184 is too low
+
+    solve("Part 2", 28537348205) {
+        val monkeys = createInitialState(1)
+
+        repeat(10_000) {
+            monkeys.forEach(Monkey::playRound)
+        }
+        calculateMonkeyBusiness(monkeys)
+    }
 }
 
-private fun calculateMonkeyBusiness(monkeys: List<Monkey>) =
-    monkeys.map { it.inspectionCounter }.sortedDescending().take(2).reduce { a, b -> a * b }
+class Monkey(
+    items: List<Int>,
+    val operation: (Long) -> Long,
+    val test: Long,
+    private val denominator: Long
+) {
+    fun playRound() {
+        items.forEach { item ->
+            val new = operation(item) / denominator
+            if (new % test == 0L)
+                ifTrue.items.add(new % leastCommonDenominator)
+            else
+                ifFalse.items.add(new % leastCommonDenominator)
+            inspectionCounter++
+        }
+        items.clear()
+    }
 
-private fun createInitialState(): List<Monkey> {
+    val items = items.map(Int::toLong).toMutableList()
+    lateinit var ifTrue: Monkey
+    lateinit var ifFalse: Monkey
+    var leastCommonDenominator: Long = -1
+    var inspectionCounter: Int = 0
+
+    override fun toString(): String {
+        return "$inspectionCounter"
+    }
+}
+
+private fun createInitialState(worryLevelDenominator: Long = 3): List<Monkey> {
     val monkey0 = Monkey(
         items = listOf(80),
         operation = { it * 5 },
-        test = { it % 2 == 0L }
+        test = 2,
+        worryLevelDenominator
     )
     val monkey1 = Monkey(
         items = listOf(75, 83, 74),
         operation = { it + 7 },
-        test = { it % 7 == 0L }
+        test = 7,
+        worryLevelDenominator
     )
     val monkey2 = Monkey(
         items = listOf(86, 67, 61, 96, 52, 63, 73),
         operation = { it + 5 },
-        test = { it % 3 == 0L }
+        test = 3,
+        worryLevelDenominator
     )
     val monkey3 = Monkey(
         items = listOf(85, 83, 55, 85, 57, 70, 85, 52),
         operation = { it + 8 },
-        test = { it % 17 == 0L }
+        test = 17,
+        worryLevelDenominator
     )
     val monkey4 = Monkey(
         items = listOf(67, 75, 91, 72, 89),
         operation = { it + 4 },
-        test = { it % 11 == 0L }
+        test = 11,
+        worryLevelDenominator
     )
     val monkey5 = Monkey(
         items = listOf(66, 64, 68, 92, 68, 77),
         operation = { it * 2 },
-        test = { it % 19 == 0L }
+        test = 19,
+        worryLevelDenominator
     )
     val monkey6 = Monkey(
         items = listOf(97, 94, 79, 88),
         operation = { it * it },
-        test = { it % 5 == 0L }
+        test = 5,
+        worryLevelDenominator
     )
     val monkey7 = Monkey(
         items = listOf(77, 85),
         operation = { it + 6 },
-        test = { it % 13 == 0L }
+        test = 13,
+        worryLevelDenominator
     )
 
     monkey0.ifTrue = monkey4
@@ -103,9 +177,11 @@ private fun createInitialState(): List<Monkey> {
     monkey7.ifFalse = monkey0
 
     return listOf(monkey0, monkey1, monkey2, monkey3, monkey4, monkey5, monkey6, monkey7)
+        .initializeLeastCommonDenominator()
+
 }
 
-private fun createExampleState(): List<Monkey> {
+private fun createExampleState(denominator: Long = 3): List<Monkey> {
     /**
      * Monkey 0:
      *   Starting items:
@@ -138,22 +214,26 @@ private fun createExampleState(): List<Monkey> {
     val monkey0 = Monkey(
         items = listOf(79, 98),
         operation = { it * 19 },
-        test = { it % 23 == 0L }
+        test = 23,
+        denominator
     )
     val monkey1 = Monkey(
         items = listOf(54, 65, 75, 74),
         operation = { it + 6 },
-        test = { it % 19 == 0L }
+        test = 19,
+        denominator
     )
     val monkey2 = Monkey(
         items = listOf(79, 60, 97),
         operation = { it * it },
-        test = { it % 13 == 0L }
+        test = 13,
+        denominator
     )
     val monkey3 = Monkey(
         items = listOf(74),
         operation = { it + 3 },
-        test = { it % 17 == 0L }
+        test = 17,
+        denominator
     )
     monkey0.ifTrue = monkey2
     monkey0.ifFalse = monkey3
@@ -164,32 +244,14 @@ private fun createExampleState(): List<Monkey> {
     monkey3.ifTrue = monkey0
     monkey3.ifFalse = monkey1
 
-    return listOf(monkey0, monkey1, monkey2, monkey3)
+    return listOf(monkey0, monkey1, monkey2, monkey3).initializeLeastCommonDenominator()
 }
 
-class Monkey(
-    items: List<Long>,
-    val operation: (Long) -> Long,
-    val test: (Long) -> Boolean
-) {
-    fun round() {
-        items.forEach { item ->
-            val new = operation(item) // / 3
-            if (test(new))
-                ifTrue.items.add(new)
-            else
-                ifFalse.items.add(new)
-            inspectionCounter++
-        }
-        items.clear()
-    }
-
-    private val items = items.toMutableList()
-    lateinit var ifTrue: Monkey
-    lateinit var ifFalse: Monkey
-    var inspectionCounter: Long = 0
-
-    override fun toString(): String {
-        return "$inspectionCounter"
-    }
+private fun List<Monkey>.initializeLeastCommonDenominator(): List<Monkey> {
+    val leastCommonDenominator = map(Monkey::test).reduce { a, b -> a * b }
+    forEach { it.leastCommonDenominator = leastCommonDenominator }
+    return this
 }
+
+private fun calculateMonkeyBusiness(monkeys: List<Monkey>) =
+    monkeys.map { it.inspectionCounter.toLong() }.sortedDescending().take(2).reduce { a, b -> a * b }
