@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 DAY=$1
+source .env
 
 cat << EOF > src/main/kotlin/Day$1.kt
 fun main() {
