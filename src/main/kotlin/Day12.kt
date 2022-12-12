@@ -9,32 +9,32 @@ fun main() {
             acctuvwj
             abdefghi
             """.trimIndent()
-        val (start, target, map) = parseMap(input)
+        val (start, target, map) = input.parseMap()
         breadFirstSearch(start, target, map)
     }
 
     solve("Part 1", 350) {
-        val input = InputData.read("day12.txt")
-        val (start, target, map) = parseMap(input)
+        val (start, target, map) = InputData.read("day12.txt").parseMap()
         breadFirstSearch(start, target, map)
     }
 
     solve("Part 2", 349) {
         val input = InputData.read("day12.txt")
-        parseMap(input).third.values
+        val (_, target, map) = input.parseMap()
+        val possibleStartingPositions = map.values
             .filter { it.height == 1 }
-            .minOf { start ->
-                // we need to create a new map state for every iteration as Square is stateful
-                val (_, target, map) = parseMap(input)
-                breadFirstSearch(start, target, map)
-            }
+
+        possibleStartingPositions.minOf { start ->
+            map.values.forEach(Square::reset)
+            breadFirstSearch(start, target, map)
+        }
     }
 }
 
-private fun parseMap(input: String): Triple<Square, Square, Map<Coordinates, Square>> {
+private fun String.parseMap(): Triple<Square, Square, Map<Coordinates, Square>> {
     var start: Square? = null
     var target: Square? = null
-    val squares = input.lines().flatMapIndexed { y, line ->
+    val squares = lines().flatMapIndexed { y, line ->
         line.mapIndexed { x, char ->
             val square = Square(Coordinates(x, y), char.toHeight())
             if (char == 'S')
@@ -44,8 +44,6 @@ private fun parseMap(input: String): Triple<Square, Square, Map<Coordinates, Squ
             square
         }
     }
-    println("Start: $start")
-    println("Target: $target")
     return Triple(start!!, target!!, squares.associateBy { it.coordinates })
 }
 
@@ -70,6 +68,10 @@ class Square(val coordinates: Coordinates, val height: Int) {
             copy(x = x - 1, y = y),
             copy(x = x, y = y - 1)
         )
+    }
+
+    fun reset() {
+        steps = null
     }
 }
 
