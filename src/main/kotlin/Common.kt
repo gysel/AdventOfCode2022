@@ -25,4 +25,8 @@ fun <T> solve(part: String, correctSolution: T?, function: () -> T) {
     println("Solution of $part is '$solution', calculation took ${System.currentTimeMillis() - start}ms")
 }
 
-data class Coordinates(val x: Int, val y: Int)
+data class Coordinates(val x: Int, val y: Int) {
+    override fun toString(): String {
+        return "x=$x y=$y"
+    }
+}
