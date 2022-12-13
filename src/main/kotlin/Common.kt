@@ -37,3 +37,5 @@ fun <T> List<T>.toPair(): Pair<T, T> {
     }
     return Pair(this[0], this[1])
 }
+
+fun String.isNumber() = all { it.isDigit() }

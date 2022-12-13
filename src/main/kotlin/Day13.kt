@@ -24,86 +24,64 @@ fun main() {
             [1,[2,[3,[4,[5,6,7]]]],8,9]
             [1,[2,[3,[4,[5,6,0]]]],8,9]
             """.trimIndent()
-
-    solve("Example", 13) {
-
-        val correctPairs = exampleInput.split("\n\n")
-            .map { pair ->
-                pair.lines().map { it.tokenize() }.toPair()
-            }
-            .withIndex()
-            .filter { (_, pair) ->
-                isInOrder(pair.first, pair.second)
-            }
-            .map { it.index + 1 }
-
-        // should be 1, 2, 4, and 6
-        // println("In correct order: $correctPairs")
-
-        correctPairs.sum()
-    }
-
     val input = InputData.read("day13.txt")
 
+    solve("Example", 13) {
+        findInOrderPairs(exampleInput)
+    }
+
     solve("Part 1", 5684) {
-
-        val correctPairs = input.split("\n\n")
-            .map { pair ->
-                pair.lines().map { it.tokenize() }.toPair()
-            }
-            .withIndex()
-            .filter { (_, pair) ->
-                isInOrder(pair.first, pair.second)
-            }
-            .map { it.index + 1 }
-
-        correctPairs.sum()
+        findInOrderPairs(input)
     }
 
-    val comparator = Comparator<List<String>> { o1, o2 ->
-        if (isInOrder(o1, o2)) -1 else 1
+    solve("Example for part 2", 140) {
+        findPositionOfDividerPackets(exampleInput)
     }
+
+    solve("Part 2", 22932) {
+        findPositionOfDividerPackets(input)
+    }
+}
+
+private fun findInOrderPairs(exampleInput: String) = parseInput(exampleInput)
+    .asSequence()
+    .chunked(2)
+    .map { it.toPair() }
+    .withIndex()
+    .filter { (_, pair) ->
+        isInOrder(pair.first, pair.second)
+    }
+    .sumOf { it.index + 1 }
+
+private fun findPositionOfDividerPackets(input: String): Int {
     val dividerPackets = listOf(
         "[[2]]".tokenize(),
         "[[6]]".tokenize()
     )
-
-    solve("Example for part 2", 140) {
-
-        val sorted = exampleInput.lines()
-            .filter { it.isNotEmpty() }
-            .map { it.tokenize() }
-            .plus(dividerPackets)
-            .sortedWith(comparator)
-
-        dividerPackets.map {
-            sorted.indexOf(it) + 1
-        }.reduce(Int::times)
+    val comparator = Comparator<List<String>> { o1, o2 ->
+        if (isInOrder(o1, o2)) -1 else 1
     }
-
-    solve("Part 2", 22932) {
-
-        val sorted = input.lines()
-            .filter { it.isNotEmpty() }
-            .map { it.tokenize() }
-            .plus(dividerPackets)
-            .sortedWith(comparator)
-
-        dividerPackets.map {
-            sorted.indexOf(it) + 1
-        }.reduce(Int::times)
-    }
+    val sorted = parseInput(input)
+        .plus(dividerPackets)
+        .sortedWith(comparator)
+    return dividerPackets.map {
+        sorted.indexOf(it) + 1
+    }.reduce(Int::times)
 }
 
-fun isInOrder(left: List<String>, right: List<String>): Boolean {
-    var tokensLeft = left.toMutableList()
-    var tokensRight = right.toMutableList()
+private fun parseInput(exampleInput: String) = exampleInput.lines()
+    .filter { it.isNotEmpty() }
+    .map { it.tokenize() }
+
+fun isInOrder(packetLeft: List<String>, packetRight: List<String>): Boolean {
+    val tokensLeft = packetLeft.toMutableList()
+    val tokensRight = packetRight.toMutableList()
     var indexLeft = 0
     var indexRight = 0
     var isInOrder: Boolean? = null
     while (isInOrder == null) {
-        var left = tokensLeft[indexLeft]
-        var right = tokensRight[indexRight]
+        val left = tokensLeft[indexLeft]
+        val right = tokensRight[indexRight]
         if (left == "[" && right == "[" || left == "]" && right == "]") {
             indexLeft++
             indexRight++
@@ -129,24 +107,20 @@ fun isInOrder(left: List<String>, right: List<String>): Boolean {
         } else if (left == "]" && right == "[") {
             isInOrder = true
         } else {
-            TODO("left=$left right=$right")
+            throw IllegalStateException("left=$left right=$right")
         }
     }
-
     return isInOrder
 }
 
-fun String.isNumber() = all { it.isDigit() }
-
 fun String.tokenize(): List<String> {
-
     var toProcess = this
     val result = mutableListOf<String>()
     while (toProcess.isNotEmpty()) {
         val chunk = toProcess.takeWhile { it !in setOf('[', ',', ']') }
-        if (chunk.isNotEmpty()) {
+        toProcess = if (chunk.isNotEmpty()) {
             result.add(chunk)
-            toProcess = toProcess.drop(chunk.length)
+            toProcess.drop(chunk.length)
         } else {
             when (toProcess.take(1)) {
                 "[" -> result.add("[")
@@ -154,68 +128,8 @@ fun String.tokenize(): List<String> {
                 "," -> {} // do nothing
                 else -> throw IllegalStateException()
             }
-            toProcess = toProcess.drop(1)
+            toProcess.drop(1)
         }
     }
     return result
 }
-
-//private fun Pair<Packet, Packet>.inCorrectOrder(): Boolean {
-//    var index = 0
-//    while (index < first.data.size && index < second.data.size) {
-//        val left = first.data[index]
-//        val right = second.data[index]
-//        // If the left list runs out of items first, the inputs are in the right order.
-//        if (left == null) {
-//            return true
-//        }
-//        // If the right list runs out of items first, the inputs are not in the right order.
-//        else if (right == null) {
-//            return false
-//        } else if (left.number < right.number) {
-//            return true
-//        } else if (left.number > right.number) {
-//            return false
-//        }
-//        index++
-//    }
-//    return true
-//}
-//
-//private fun String.parsePair(): Pair<Packet, Packet> {
-//    val (firstLine, secondLine) = this.lines()
-//    return Packet.parse(firstLine) to Packet.parse(secondLine)
-//}
-//
-//data class Packet(
-//    val data: List<Value>
-//) {
-//    companion object {
-//        fun parse(line: String): Packet {
-//            var toProcess = line.drop(1)
-//            var depth = 1
-//            val data = mutableListOf<Value>()
-//            while (toProcess.isNotEmpty()) {
-//                val chunk = toProcess.takeWhile { it !in setOf('[', ',', ']') }
-//                if (chunk.isNotEmpty()) {
-//                    data.add(Value(chunk.toInt(), depth))
-//                    toProcess = toProcess.drop(chunk.length)
-//                } else {
-//                    when (toProcess.take(1)) {
-//                        "[" -> depth++
-//                        "]" -> depth--
-//                        "," -> {} // do nothing
-//                        else -> throw IllegalStateException()
-//                    }
-//                    toProcess = toProcess.drop(1)
-//                }
-//            }
-//            return Packet(data)
-//        }
-//    }
-//}
-//
-//data class Value(
-//    val number: Int,
-//    val depth: Int
-//)
