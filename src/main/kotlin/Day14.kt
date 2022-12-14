@@ -12,18 +12,23 @@ fun main() {
     solve("Example part 1", 24) {
         val rocks: List<List<Coordinates>> = parseInput(exampleInput)
         val map = createMap(rocks)
+        val maxY = map.maxOf { it.key.y }
         map.print()
-        map.simulateSand()
+        map.simulateSand { it.y > maxY }
     }
 
     solve("Part 1", 692) {
         val rocks: List<List<Coordinates>> = parseInput(input)
         val map = createMap(rocks)
+        val maxY = map.maxOf { it.key.y }
         map.print()
-        map.simulateSand()
+        map.simulateSand { it.y > maxY }
     }
-    solve("Part 2", null) {
-
+    solve("Part 2", 31706) {
+        val rocks: List<List<Coordinates>> = parseInput(input)
+        val map = createMap(rocks)
+        map.print()
+        map.simulateSand { it.x == 500 && it.y == 0 }
     }
 }
 
@@ -52,21 +57,22 @@ private fun createMap(rocks: List<List<Coordinates>>): MutableMap<Coordinates, C
             } else throw IllegalStateException()
         }
     }
+
     return map
 }
 
-private fun MutableMap<Coordinates, Char>.simulateSand(): Int {
-    val maxY = maxOf { it.key.y } + 1
+private fun MutableMap<Coordinates, Char>.simulateSand(simulationStop: (Coordinates) -> Boolean): Int {
     var sandPlaced = 0
     var sandOverflow = false
+    val floorLevel = maxOf { it.key.y } + 2
     while (!sandOverflow) {
         var sandPosition = Coordinates(500, 0)
         var sandMoving = true
         while (sandMoving) {
             val nextPositions = listOf(sandPosition.down(), sandPosition.down().left(), sandPosition.down().right())
             val nextPosition = nextPositions.find { readAt(it) == AIR }
-            if (nextPosition == null) {
-                put(sandPosition,SAND)
+            if (nextPosition == null || nextPosition.y == floorLevel) {
+                put(sandPosition, SAND)
                 sandPlaced++
                 //print()
                 sandMoving = false
@@ -74,7 +80,7 @@ private fun MutableMap<Coordinates, Char>.simulateSand(): Int {
                 sandPosition = nextPosition
             }
 
-            if (sandPosition.y == maxY) {
+            if (simulationStop(sandPosition)) {
                 print()
                 sandMoving = false
                 sandOverflow = true
@@ -83,6 +89,7 @@ private fun MutableMap<Coordinates, Char>.simulateSand(): Int {
     }
     return sandPlaced
 }
+
 private fun <V> Map<Coordinates, V>.print() {
     val minX = minOf { it.key.x } - 1
     val minY = minOf { it.key.y } - 1
