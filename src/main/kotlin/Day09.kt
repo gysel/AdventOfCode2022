@@ -63,6 +63,7 @@ private fun moveRope(
     return trail.size
 }
 
+// (x,y) is bottom left
 private fun Coordinates.left() = copy(x = x - 1)
 private fun Coordinates.down() = copy(y = y - 1)
 private fun Coordinates.right() = copy(x = x + 1)

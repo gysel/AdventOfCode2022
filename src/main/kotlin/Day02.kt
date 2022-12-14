@@ -1,6 +1,6 @@
-const val ROCK = 1
-const val PAPER = 2
-const val SCISSORS = 3
+private const val ROCK = 1
+private const val PAPER = 2
+private const val SCISSORS = 3
 
 const val LOSE = 'X'
 const val DRAW = 'Y'
