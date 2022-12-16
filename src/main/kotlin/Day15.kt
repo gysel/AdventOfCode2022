@@ -34,33 +34,56 @@ fun main() {
         val min = 0
         val max = 20
 
-        val beacons = data.map { it.beacon }.toSet()
-        val allCoordinates: Sequence<Coordinates> = (min..max)
-            .asSequence()
-            .flatMap { x ->
-                (min..max).map { y -> Coordinates(x, y) }
-            }
-        allCoordinates.first { point ->
-            point !in beacons && data.none { it.isInRange(point) }
-        }.tuningFrequency()
+        findUnrangedCoordinates(data, min, max)
     }
 
+    // be careful here, this will run for hours...
     solve("Part 2", null) {
-        val data = parseInput(input)
+        val data = parseInput(input).sortedByDescending { it.radius }
         val min = 0
         val max = 4_000_000
 
-        val beacons = data.map { it.beacon }.toSet()
-        val allCoordinates: Sequence<Coordinates> = (min..max)
-            .asSequence()
-            .flatMap { x ->
-                println("x=$x")
-                (min..max).map { y -> Coordinates(x, y) }
-            }
-        allCoordinates.first { point ->
-            point !in beacons && data.none { it.isInRange(point) }
-        }.tuningFrequency()
+        findUnrangedCoordinates(data, min, max)
     }
+}
+
+private fun findUnrangedCoordinates(data: List<Record>, min: Int, max: Int): Long {
+    val beacons = data.map { it.beacon }.toSet()
+    val start = System.currentTimeMillis()
+    val r = (min..max)
+        .asSequence()
+        .map { y ->
+            if (y % 100 == 0) {
+                val percent = (y.toFloat() / max)
+                val time = System.currentTimeMillis() - start
+                println(String.format("y=%s %.4f%% in %dms", y, percent * 100, time))
+
+            }
+            var x = min
+            var freeX: Int? = null
+            while (x <= max && freeX == null) {
+                val point = Coordinates(x, y)
+                if (point in beacons) {
+                    x++
+                } else {
+                    val sensor = data.find { it.isInRange(point) }
+                    if (sensor == null) {
+                        freeX = x
+                    } else {
+                        // move until out of range of sensor
+                        do {
+                            x++
+                        } while (sensor.isInRange(Coordinates(x, y)))
+                    }
+                }
+            }
+            if (freeX != null) {
+                Coordinates(freeX, y)
+            } else null
+        }
+        .filter { it != null }
+        .first()
+    return r!!.tuningFrequency()
 }
 
 private class Record(
@@ -100,4 +123,4 @@ private fun List<Record>.countOccupied(y: Int): Int {
     }
 }
 
-fun Coordinates.tuningFrequency() = x * 4000000 + y
+fun Coordinates.tuningFrequency() = 4_000_000L * x + y
