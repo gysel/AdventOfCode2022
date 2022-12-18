@@ -8,15 +8,18 @@ fun main() {
     val exampleInput = """
     """.trimIndent().lines()
     val input = InputData.readLines("day${DAY}.txt")
+    solve("Example part 1", null) {
+
+    }
+
     solve("Part 1", null) {
 
     }
-    solve("Part 2", null) {
+
+    solve("Example part 2", null) {
 
     }
-    solve("Part 1", null) {
 
-    }
     solve("Part 2", null) {
 
     }
