@@ -9,49 +9,46 @@ fun main() {
         4
     """.trimIndent().lines()
     val input = InputData.readLines("day20.txt")
+    val decryptionKey = 811_589_153
 
     solve("Example part 1", 3) {
-        val file: List<Number> = exampleInput.map(String::toLong).map { Number(it) }
-        val result = mix(file)
+        val file: List<Number> = exampleInput.parseFile()
+        val result = file.mix()
         calculateGroveCoordinates(result, file)
     }
 
     solve("Part 1", 4066) {
-        val file: List<Number> = input.map(String::toLong).map { Number(it) }
-        val result = mix(file)
+        val file: List<Number> = input.parseFile()
+        val result = file.mix()
         calculateGroveCoordinates(result, file)
     }
 
     solve("Example part 2", 1_623_178_306) {
-        val decryptionKey = 811_589_153
-        val file: List<Number> = exampleInput.map(String::toLong).map { it * decryptionKey }.map { Number(it) }
-        val result = mix(file, 10)
+        val file: List<Number> = exampleInput.parseFile(decryptionKey)
+        val result = file.mix(10)
         calculateGroveCoordinates(result, file)
     }
 
-    solve("Part 2", null) {
-        val decryptionKey = 811_589_153
-        val file: List<Number> = input.map(String::toLong).map { it * decryptionKey }.map { Number(it) }
-        val result = mix(file, 10)
+    solve("Part 2", 6_704_537_992_933) {
+        val file: List<Number> = input.parseFile(decryptionKey)
+        val result = file.mix(10)
         calculateGroveCoordinates(result, file)
-
     }
 }
 
-private fun mix(file: List<Number>, times: Int = 1): List<Number> {
-    val mixing = file.toMutableList()
-    repeat(times) { round ->
-        println("mixing round $round")
-        file.forEach { number ->
+private fun List<String>.parseFile(decryptionKey: Int = 1) =
+    map { Number(it.toLong() * decryptionKey) }
+
+private fun List<Number>.mix(times: Int = 1): List<Number> {
+    val mixing = toMutableList()
+    repeat(times) {
+        forEach { number ->
             val index = mixing.indexOf(number)
             var newIndex = (index + number.n)
-            while (newIndex <= 0) {
-                newIndex += file.size - 1
+            newIndex %= (size - 1)
+            if (newIndex <= 0) {
+                newIndex += size - 1
             }
-            while (newIndex >= file.size) {
-                newIndex += -(file.size - 1)
-            }
-            //println("${number.n} moves from $index to $newIndex")
             mixing.removeAt(index)
             mixing.add(newIndex.toInt(), number)
         }
